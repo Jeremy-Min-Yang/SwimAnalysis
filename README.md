@@ -44,25 +44,33 @@ python src/race_stats.py swimvid4.mp4 --pool 25 --start 3.13 --touch 15.22,28.63
 - `--pool 25` or `50`, `--unit m` (default) or `yd`
 - `--start`: second the swimmer leaves the block or wall
 - `--touch`: second of each wall touch, turns then the finish
+- `--peak cycle` (default) or `--peak arm`: see below
 
 The distance is the pool length times the number of touches. Prints a table
 and writes `outputs/<video>/race_stats.json`.
 
 Strokes come from how far the swimmer's mask reaches above its own center:
-the recovering arm lifts it once per arm cycle. Strokes count both arms (two
-per cycle), so counts are even and can be one off a hand count. Distance per
-stroke uses the whole length, underwater part included.
+a recovering arm lifts it. Usually only the near arm clears the swimmer's
+outline, so each rise is a full arm cycle, two strokes (`--peak cycle`;
+counts are then even and can be one off a hand count). Filmed close and
+side-on at water level, both arms clear it and each rise is one stroke
+(`--peak arm`, as in swimvid7). The video alone does not tell which. Strokes
+count each arm; distance per stroke uses the whole length, underwater part
+included.
 
 ## Accuracy so far
 
 | video | truth | measured |
 |---|---|---|
 | swimvid4, 50 m (25 m pool) | 11.9 / 25.5 official; 14 + 20 strokes by hand | 12.08 / 25.49; 14 + 20 strokes |
-| swimvid5, 25 yd | 15 strokes | 14 strokes (one extra seed needed) |
+| swimvid5, 25 yd | 15 strokes | 14 |
+| swimvid3, 25 m | 13 strokes | 12 |
+| swimvid7, 25 m (`--peak arm`) | 11 strokes | 11 |
 
-Times are only as good as `--start` and `--touch`. swimvid3 and swimvid7 are
-not counted yet: the tracker lost the swimmer (to a person on deck, splash,
-or another lane) and still needs seeds.
+Times are only as good as `--start` and `--touch`. Seeds used:
+swimvid4 `--seed 0:594,953,766,1284`, swimvid5 `--seed 0:505,625,808,787
+--seed 300:350,890,1079,1060`, swimvid3 `--seed 130:95,275,280,315`,
+swimvid7 `--seed 232:200,300,1290,550`.
 
 ## Next
 

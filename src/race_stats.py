@@ -15,7 +15,12 @@ drop in and out of the mask in the splash.
 The typical cycle time comes from autocorrelation over the race; each cycle
 is one peak, counted only where the signal is clearly periodic, so the glide
 after the start and turns does not count. A cycle hidden by splash is filled
-in from the rhythm. One cycle is two strokes (left + right arm).
+in from the rhythm.
+
+What one peak is depends on the camera: usually only the near arm clears the
+swimmer's outline, so a peak is one arm cycle, two strokes (--peak cycle).
+Filmed close and side-on at water level, both arms do, and a peak is one
+stroke (--peak arm). The signal alone cannot tell these apart.
 
 When a length's signal is not periodic enough, its stroke numbers are left
 out (null) rather than guessed.
@@ -182,6 +187,7 @@ def race_stats(
     unit: str,
     start_s: float,
     touches_s: list[float],
+    strokes_per_peak: int = 2,
 ) -> dict:
     fps = track["fps"]
     frames = track["frames"]
@@ -233,18 +239,16 @@ def race_stats(
             # Count cycles across the span, so one hidden by splash or a lost
             # mask still counts.
             span = length_peaks[-1] - length_peaks[0]
-            cycles = max(len(length_peaks), round(span / period) + 1)
-            cycle_s = span / fps / (cycles - 1)
+            count = max(len(length_peaks), round(span / period) + 1)
+            peak_s = span / fps / (count - 1)
+            strokes = strokes_per_peak * count
             length.update(
                 {
-                    "cycles": cycles,
-                    "strokes": 2 * cycles,
-                    "stroke_rate_cpm": 60 / cycle_s,
-                    "stroke_rate_spm": 120 / cycle_s,
-                    "distance_per_cycle": pool_length / cycles,
-                    "distance_per_stroke": pool_length / (2 * cycles),
+                    "strokes": strokes,
+                    "stroke_rate_spm": 60 * strokes_per_peak / peak_s,
+                    "distance_per_stroke": pool_length / strokes,
                     "first_stroke_s": (length_peaks[0] - begin) / fps,
-                    "cycle_frames": length_peaks,
+                    "peak_frames": length_peaks,
                 }
             )
         else:
@@ -252,14 +256,11 @@ def race_stats(
                 {
                     key: None
                     for key in (
-                        "cycles",
                         "strokes",
-                        "stroke_rate_cpm",
                         "stroke_rate_spm",
-                        "distance_per_cycle",
                         "distance_per_stroke",
                         "first_stroke_s",
-                        "cycle_frames",
+                        "peak_frames",
                     )
                 }
             )
@@ -267,7 +268,7 @@ def race_stats(
 
     total_s = (touches[-1] - start) / fps
     distance = pool_length * len(touches)
-    counted = [length for length in lengths if length["cycles"]]
+    counted = [length for length in lengths if length["strokes"]]
     return {
         "pool_length": pool_length,
         "unit": unit,
@@ -275,7 +276,8 @@ def race_stats(
         "total_s": total_s,
         "average_speed": distance / total_s,
         "average_speed_mps": meters * len(touches) / total_s,
-        "cycle_s": period / fps if period else None,
+        "strokes_per_peak": strokes_per_peak,
+        "peak_s": period / fps if period else None,
         "periodicity": periodicity,
         "total_strokes": sum(length["strokes"] for length in counted) if counted else None,
         "lengths": lengths,
@@ -288,8 +290,9 @@ def print_report(stats: dict) -> None:
         f"{stats['distance']:g} {unit} in {stats['total_s']:.2f} s, "
         f"average {stats['average_speed']:.2f} {unit}/s"
     )
-    if stats["cycle_s"]:
-        print(f"Arm cycle {stats['cycle_s']:.2f} s (rhythm strength {stats['periodicity']:.2f})")
+    if stats["peak_s"]:
+        what = "arm cycle" if stats["strokes_per_peak"] == 2 else "stroke"
+        print(f"One {what} every {stats['peak_s']:.2f} s (rhythm strength {stats['periodicity']:.2f})")
     print(
         f"\n{'length':>6} {'split':>7} {'speed':>7} {'strokes':>8} {'rate':>9} "
         f"{'dist/strk':>10} {'1st strk':>9}"
@@ -307,8 +310,8 @@ def print_report(stats: dict) -> None:
             f"{show('first_stroke_s', 9)}"
         )
     print(
-        "\nStrokes count both arms (2 per arm cycle). Distance per stroke uses the"
-        "\nwhole length, including the underwater part after the start or turn."
+        "\nStrokes count each arm. Distance per stroke uses the whole length,"
+        "\nincluding the underwater part after the start or turn."
     )
 
 
@@ -322,6 +325,13 @@ def main() -> int:
         "--touch",
         required=True,
         help="Seconds of each wall touch, comma-separated: turns then the finish",
+    )
+    parser.add_argument(
+        "--peak",
+        choices=("cycle", "arm"),
+        default="cycle",
+        help="What one rise of the outline is: a full arm cycle (far arm hidden, "
+        "the usual case) or one arm (close side-on view, both arms visible)",
     )
     parser.add_argument("-o", "--output", type=Path, help="Default: race_stats.json next to the track")
     args = parser.parse_args()
@@ -338,7 +348,8 @@ def main() -> int:
         parser.error("--start and --touch times must increase")
 
     track = json.loads(track_path.read_text(encoding="utf-8"))
-    stats = race_stats(track, args.pool, args.unit, args.start, touches)
+    strokes_per_peak = 2 if args.peak == "cycle" else 1
+    stats = race_stats(track, args.pool, args.unit, args.start, touches, strokes_per_peak)
     output = args.output or folder / "race_stats.json"
     output.write_text(json.dumps(stats, indent=1), encoding="utf-8")
     print_report(stats)
