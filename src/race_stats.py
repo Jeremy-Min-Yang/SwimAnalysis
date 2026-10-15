@@ -10,10 +10,12 @@ Strokes come from the shape of the swimmer's SAM 2 mask, not from a pose
 skeleton: the recovering arm lifts out of the water once per arm cycle, so
 how far the mask reaches above its own center (scaled by the swimmer's size)
 rises and falls with the stroke. Box width is left out on purpose: feet
-drop in and out of the mask in the splash. The typical
-cycle time comes from autocorrelation over the race; each cycle is one peak,
-counted only where the signal is clearly periodic (so the glide after the
-start and turns does not count). One cycle is two strokes (left + right arm).
+drop in and out of the mask in the splash.
+
+The typical cycle time comes from autocorrelation over the race; each cycle
+is one peak, counted only where the signal is clearly periodic, so the glide
+after the start and turns does not count. A cycle hidden by splash is filled
+in from the rhythm. One cycle is two strokes (left + right arm).
 
 When a length's signal is not periodic enough, its stroke numbers are left
 out (null) rather than guessed.
@@ -27,14 +29,12 @@ from pathlib import Path
 
 import numpy as np
 
-from analyze_strokes import fill_gaps, find_peaks
-from detect_pose import moving_average
-
 
 METERS_PER_YARD = 0.9144
-# Freestyle arm cycles last between these many seconds.
+# Freestyle arm cycles last between these many seconds (sprinters about 0.9,
+# long-glide swimmers about 3).
 MIN_CYCLE_S = 0.6
-MAX_CYCLE_S = 2.0
+MAX_CYCLE_S = 3.5
 # Below this autocorrelation at the cycle time, the race has no usable rhythm.
 MIN_PERIODICITY = 0.3
 # Remove slow changes (camera zoom, swimmer turning) with a moving average this
@@ -56,6 +56,47 @@ CHAIN_TOLERANCE = 0.25
 CHAIN_PERIODICITY = 0.1
 # Peaks within this many cycles before a touch are the reach to the wall.
 TOUCH_CYCLES = 0.5
+
+
+def fill_gaps(signal: np.ndarray) -> np.ndarray | None:
+    """Fill NaN gaps by linear interpolation."""
+    known = np.flatnonzero(np.isfinite(signal))
+    if len(known) < 2:
+        return None
+    return np.interp(np.arange(len(signal)), known, signal[known])
+
+
+def moving_average(values: np.ndarray, window: int) -> np.ndarray:
+    """Centered moving average, padding the ends by repeating end values."""
+    half = window // 2
+    if half < 1:
+        return values
+    padded = np.concatenate(([values[0]] * half, values, [values[-1]] * half))
+    kernel = np.ones(2 * half + 1) / (2 * half + 1)
+    return np.convolve(padded, kernel, mode="valid")
+
+
+def find_peaks(
+    signal: np.ndarray, distance: int, base_distance: int, prominence: float
+) -> list[int]:
+    """Local maxima that are the highest within +/- distance samples and rise
+    at least prominence above the lowest point within +/- base_distance
+    samples on both sides."""
+    # Pad with the minimum so a peak at either end of the signal can count.
+    padded = np.concatenate(([signal.min()], signal, [signal.min()]))
+    peaks = []
+    for index in range(1, len(padded) - 1):
+        value = padded[index]
+        if value < padded[index - 1] or value <= padded[index + 1]:
+            continue
+        if value < padded[max(0, index - distance) : index + distance + 1].max():
+            continue
+        left_low = padded[max(0, index - base_distance) : index].min()
+        right_low = padded[index + 1 : index + base_distance + 1].min()
+        if value - max(left_low, right_low) < prominence:
+            continue
+        peaks.append(index - 1)
+    return peaks
 
 
 def mask_shape_signal(frames: list[dict]) -> np.ndarray:
