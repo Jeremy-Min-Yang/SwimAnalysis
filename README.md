@@ -14,8 +14,27 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+On Windows, activate with `.venv\Scripts\activate` instead.
+
 `track_sam2.py` uses the SAM 2.1 tiny weights, `sam2.1_t.pt` (Ultralytics
-downloads them on first use).
+downloads them on first use). Videos and weights are not in the repository;
+copy the videos over yourself.
+
+### Which processor runs it
+
+`--device auto` (the default) picks an NVIDIA GPU, or an AMD GPU through
+ROCm, then an Apple GPU, then the CPU, and prints which. Speed at the
+default `--imgsz 640`:
+
+| machine | speed |
+|---|---|
+| M2 MacBook (8 GB), Apple GPU | about 3 frames/s |
+| M2 CPU | about 2x slower |
+
+AMD Radeon RX 6000 cards (such as the RX 6700 XT) have no official PyTorch
+GPU support on Windows, so there it runs on the CPU. For the GPU, use Linux
+with ROCm (set `HSA_OVERRIDE_GFX_VERSION=10.3.0` for the RX 6700 XT) or a
+cloud NVIDIA GPU such as Google Colab.
 
 ## 1. Follow the swimmer
 

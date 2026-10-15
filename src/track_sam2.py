@@ -53,6 +53,17 @@ MAX_ASPECT = 12.0
 LOST_RESET_FRAMES = 5
 
 
+def pick_device(requested: str) -> str:
+    """"auto": an NVIDIA or AMD (ROCm) GPU, else an Apple GPU, else the CPU."""
+    if requested != "auto":
+        return requested
+    if torch.cuda.is_available():
+        return "0"
+    if torch.backends.mps.is_available():
+        return "mps"
+    return "cpu"
+
+
 def mask_record(mask: np.ndarray):
     """Box, area, and centroid of a boolean mask, or None when it is empty."""
     ys, xs = np.nonzero(mask)
@@ -279,7 +290,11 @@ def main() -> int:
     )
     parser.add_argument("--model", default="sam2.1_t.pt", help="SAM 2 weights")
     parser.add_argument("--imgsz", type=int, default=640, help="SAM 2 input size (1024 is ~5x slower)")
-    parser.add_argument("--device", default="mps", help="mps, cpu, or a CUDA index")
+    parser.add_argument(
+        "--device",
+        default="auto",
+        help="auto (default), cpu, mps (Apple GPU), or a GPU index such as 0",
+    )
     parser.add_argument("-o", "--output-dir", type=Path)
     args = parser.parse_args()
 
@@ -288,7 +303,9 @@ def main() -> int:
     except ValueError as error:
         parser.error(str(error))
     output_dir = args.output_dir or Path("outputs") / args.video.stem
-    return track(args.video, seeds, args.model, output_dir, args.imgsz, args.device)
+    device = pick_device(args.device)
+    print(f"Device: {device}")
+    return track(args.video, seeds, args.model, output_dir, args.imgsz, device)
 
 
 if __name__ == "__main__":
