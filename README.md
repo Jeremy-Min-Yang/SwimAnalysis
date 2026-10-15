@@ -62,15 +62,20 @@ included.
 
 | video | truth | measured |
 |---|---|---|
-| swimvid4, 50 m (25 m pool) | 11.9 / 25.5 official; 14 + 20 strokes by hand | 12.08 / 25.49; 14 + 20 strokes |
+| swimvid4, 50 m (25 m pool) | 11.9 / 25.5 official; 14 + 20 strokes by hand | 12.08 / 25.49; 12 + 22 strokes |
 | swimvid5, 25 yd | 15 strokes | 14 |
 | swimvid3, 25 m | 13 strokes | 12 |
-| swimvid7, 25 m (`--peak arm`) | 11 strokes | 11 |
+| swimvid7, 25 m (`--peak arm`) | 11 strokes | 10 |
 
-Times are only as good as `--start` and `--touch`. Seeds used:
-swimvid4 `--seed 0:594,953,766,1284`, swimvid5 `--seed 0:505,625,808,787
---seed 300:350,890,1079,1060`, swimvid3 `--seed 130:95,275,280,315`,
-swimvid7 `--seed 232:200,300,1290,550`.
+Seeds used: swimvid4 `--seed 0:594,953,766,1284 --seed 260:580,1220,1079,1350`,
+swimvid5 `--seed 0:505,625,808,787 --seed 300:350,890,1079,1060`,
+swimvid3 `--seed 130:95,275,280,315`, swimvid7 `--seed 232:200,300,1290,550`.
+
+Times are only as good as `--start` and `--touch`. Stroke counts are within
+about 2 and depend on the track: strokes during a stretch where the swimmer
+was lost, or before the first seed, are missed (swimvid4 length 1, swimvid7),
+and underwater dolphin kicks just before a breakout can count as a stroke
+(swimvid4 length 2).
 
 ## Next
 

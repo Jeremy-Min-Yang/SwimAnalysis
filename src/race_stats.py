@@ -61,6 +61,9 @@ CHAIN_TOLERANCE = 0.25
 CHAIN_PERIODICITY = 0.1
 # Peaks within this many cycles before a touch are the reach to the wall.
 TOUCH_CYCLES = 0.5
+# Peaks within this many frames of a frame without a mask are made by filling
+# the gap, not by the swimmer.
+GAP_MARGIN = 2
 
 
 def fill_gaps(signal: np.ndarray) -> np.ndarray | None:
@@ -194,7 +197,8 @@ def race_stats(
     start, touches = round(start_s * fps), [round(t * fps) for t in touches_s]
     race = slice(start, touches[-1] + 1)
 
-    raw = fill_gaps(mask_shape_signal(frames))
+    measured = mask_shape_signal(frames)
+    raw = fill_gaps(measured)
     if raw is None:
         raise ValueError("the swimmer mask is missing in almost every frame")
     period, periodicity = cycle_frames(
@@ -216,6 +220,7 @@ def race_stats(
             for peak in find_peaks(signal, int(PEAK_SPACING * cycle), cycle, PEAK_PROMINENCE)
             if start <= peak <= touches[-1]
             and not any(0 <= touch - peak < TOUCH_CYCLES * cycle for touch in touches)
+            and np.isfinite(measured[max(0, peak - GAP_MARGIN) : peak + GAP_MARGIN + 1]).all()
         ]
         peaks = extend_chain(
             [peak for peak in candidates if rhythm[peak] >= LOCAL_PERIODICITY],
