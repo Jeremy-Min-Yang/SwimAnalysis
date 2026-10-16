@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>Swimline · 포트폴리오</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  @page { size: A4; margin: 0; }
+  :root {
+    --ink: #111827;
+    --body: #374151;
+    --muted: #8b919c;
+    --line: #e5e7eb;
+    --accent: #1e3a8a;
+    --accent-soft: #e8eefb;
+    --accent-line: #c9d6f2;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #ffffff; }
+  body {
+    width: 210mm; height: 297mm; overflow: hidden;
+    padding: 13mm 15mm 9mm;
+    font-family: Pretendard, Inter, system-ui, sans-serif; word-break: keep-all; color: var(--body);
+    font-size: 9.6px; line-height: 1.55;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .mono { font-family: "JetBrains Mono", ui-monospace, monospace; letter-spacing: .06em; }
+
+  /* header */
+  header { display: flex; justify-content: space-between; align-items: flex-end; }
+  h1 { font-size: 34px; font-weight: 800; letter-spacing: -.035em; color: var(--ink); line-height: 1; }
+  h1 small { font-size: 15px; font-weight: 500; color: var(--muted); letter-spacing: 0; margin-left: 6px; }
+  .tagline { font-size: 12px; color: var(--body); margin-top: 7px; font-weight: 500; }
+  .links { text-align: right; font-size: 9.5px; line-height: 1.9; }
+  .links a { color: var(--body); text-decoration: none; }
+  .links b { color: var(--ink); font-weight: 600; }
+  .links svg { width: 10px; height: 10px; vertical-align: -1px; margin-right: 5px; }
+  .rule { height: 2px; margin: 11px 0 6px; background: linear-gradient(90deg, var(--ink) 0%, var(--accent) 45%, var(--accent-line) 100%); border-radius: 1px; }
+  .meta { display: flex; justify-content: space-between; font-size: 8.5px; color: var(--muted); }
+  .meta b { color: var(--ink); font-weight: 600; }
+
+  /* section titles */
+  .section { display: flex; align-items: center; gap: 8px; margin: 15px 0 9px; }
+  .section::before { content: ""; width: 5px; height: 5px; background: var(--accent); border-radius: 1px; }
+  .section h2 { font-size: 10.5px; font-weight: 700; color: var(--ink); }
+  .section .mono { font-size: 7.5px; color: var(--muted); }
+  .section::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+  /* screens */
+  .screens { display: grid; grid-template-columns: 1fr 1.25fr; gap: 12px; margin-top: 14px; }
+  figure { margin: 0; }
+  figure .frame { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: #f8fafc; box-shadow: 0 1px 2px rgba(17,24,39,.05); }
+  figure img { display: block; width: 100%; height: 118px; object-fit: cover; }
+  figure.app img { object-fit: contain; background: #fff; }
+  figcaption { text-align: center; margin-top: 5px; font-size: 9px; color: var(--ink); font-weight: 500; }
+  figcaption span { display: block; color: var(--muted); font-weight: 400; font-size: 8px; }
+
+  /* overview + stack */
+  .two { display: grid; grid-template-columns: 1.15fr 1fr; gap: 22px; }
+  .overview p { font-size: 10px; line-height: 1.75; color: var(--body); }
+  .overview p + p { margin-top: 6px; }
+  .overview strong { color: var(--ink); font-weight: 700; }
+  .stack { display: grid; grid-template-columns: 62px 1fr; row-gap: 7px; align-items: center; }
+  .stack .mono { font-size: 7.5px; color: var(--muted); }
+  .chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .chip { border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px; font-size: 8.5px; font-weight: 500; color: var(--ink); background: #fff; }
+  .chip.key { background: var(--accent-soft); border-color: var(--accent-line); color: var(--accent); }
+
+  /* challenge cards */
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .card { border: 1px solid var(--line); border-radius: 10px; padding: 12px 13px 11px; display: flex; flex-direction: column; }
+  .card-head { display: flex; gap: 9px; align-items: center; margin-bottom: 9px; }
+  .icon { width: 24px; height: 24px; border-radius: 7px; background: var(--accent-soft); display: grid; place-items: center; flex: none; }
+  .icon svg { width: 13px; height: 13px; stroke: var(--accent); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .card-head .mono { font-size: 7.5px; color: var(--muted); display: block; line-height: 1.2; }
+  .card-head h3 { font-size: 10.5px; color: var(--ink); font-weight: 700; line-height: 1.3; }
+  .label { font-size: 7px; color: var(--muted); margin: 6px 0 2px; }
+  .card p { font-size: 8.7px; line-height: 1.6; }
+  .impact { margin-top: auto; padding-top: 7px; border-top: 1px solid var(--line); }
+  .impact p { color: var(--accent); font-weight: 600; }
+  .card .spacer { flex: 1; min-height: 6px; }
+
+  /* results strip */
+  .results { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .results figure img { height: 92px; object-fit: cover; object-position: top; }
+  .numbers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .num { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+  .num b { display: block; font-size: 15px; color: var(--ink); font-weight: 700; letter-spacing: -.02em; }
+  .num span { font-size: 8px; color: var(--muted); line-height: 1.4; display: block; }
+
+  /* role + highlights */
+  .role { display: flex; align-items: center; gap: 14px; padding-bottom: 9px; border-bottom: 1px solid var(--line); }
+  .role .who { font-size: 13px; font-weight: 800; color: var(--ink); white-space: nowrap; }
+  .role .who .mono { font-size: 8.5px; color: var(--accent); font-weight: 500; margin-left: 4px; }
+  .role .sep { width: 1px; height: 16px; background: var(--line); }
+  .areas { display: flex; gap: 13px; flex-wrap: wrap; font-size: 9px; color: var(--ink); }
+  .areas span::before { content: "▸"; color: var(--accent); margin-right: 4px; font-size: 8px; }
+  .highlights-title { font-size: 7.5px; color: var(--muted); margin: 9px 0 5px; }
+  .highlights { display: grid; grid-template-columns: repeat(4, 1fr); row-gap: 3px; font-size: 8.6px; color: var(--ink); }
+  .highlights span::before { content: "✓"; color: var(--accent); font-weight: 700; margin-right: 6px; }
+  footer { display: flex; justify-content: space-between; margin-top: 10px; font-size: 8px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Swimline<small>수영 영상 분석</small></h1>
+    <div class="tagline">휴대폰으로 찍은 수영 영상 하나로 구간 기록, 속도, 스트로크, 코칭 피드백까지</div>
+  </div>
+  <div class="links">
+    <div class="mono" style="color:var(--muted);font-size:8px">PYTHON · STREAMLIT · SAM 2</div>
+  </div>
+</header>
+<div class="rule"></div>
+<div class="meta">
+  <div><b>개인 프로젝트</b> · 리서치부터 모델, 앱까지 1인 개발</div>
+</div>
+
+<div class="screens">
+  <figure>
+    <div class="frame"><img src="tracking.jpg" alt="Swimmer outlined by the tracker"></div>
+    <figcaption>선수 추적<span>SAM 2 윤곽선과 박스, 자동 탐지·재탐지</span></figcaption>
+  </figure>
+  <figure class="app">
+    <div class="frame"><img src="app_timeline.png" alt="Race timeline and headline numbers in the app"></div>
+    <figcaption>결과 화면<span>클릭 가능한 레이스 타임라인: 스타트, 스트로크, 턴, 피니시</span></figcaption>
+  </figure>
+</div>
+
+<div class="section"><h2>프로젝트 개요</h2></div>
+<div class="two">
+  <div class="overview">
+    <p>Swimline은 <strong>평범한 휴대폰 자유형 영상을 별도 입력 없이 레이스 데이터로 바꿔주는</strong> 분석 도구입니다. 구간 기록, 속도, 스트로크 수, 스트로크 레이트, 스트로크당 거리, 턴 시간, SWOLF와 스트로크 인덱스를 계산하고, 근거 수치를 함께 보여주는 코칭 피드백과 개선 시뮬레이션을 제공합니다.</p>
+    <p>기성 포즈 모델은 물보라 속에서 관절을 찾지 못하기 때문에, 영상에서 안정적으로 얻을 수 있는 신호만 사용했습니다. 선수의 세그멘테이션 추적, 팔이 물 밖으로 나오는 리듬, 카메라의 패닝, 오디오 속 스타트 신호음입니다. 모든 지표는 직접 센 스트로크 수, 화면 속 스트로크 카운터, 공식 경기 기록과 비교해 검증했습니다.</p>
+  </div>
+  <div class="stack">
+    <span class="mono">VISION</span>
+    <div class="chips"><span class="chip key">SAM 2</span><span class="chip key">YOLO-World</span><span class="chip">OpenCV</span></div>
+    <span class="mono">SIGNAL</span>
+    <div class="chips"><span class="chip key">자기상관</span><span class="chip">옵티컬 플로우</span><span class="chip">오디오 FFT</span><span class="chip">NumPy</span></div>
+    <span class="mono">APP</span>
+    <div class="chips"><span class="chip key">Streamlit</span><span class="chip">Altair</span><span class="chip">pandas</span></div>
+    <span class="mono">MEDIA</span>
+    <div class="chips"><span class="chip">PyAV</span><span class="chip">H.264 / libx264</span></div>
+    <span class="mono">RUNTIME</span>
+    <div class="chips"><span class="chip">PyTorch</span><span class="chip">Apple MPS</span><span class="chip">CUDA</span></div>
+    <span class="mono">TESTING</span>
+    <div class="chips"><span class="chip">정답 데이터 검증</span><span class="chip">Playwright</span></div>
+  </div>
+</div>
+
+<div class="section"><h2>기술적 과제와 해결</h2></div>
+<div class="cards">
+  <div class="card">
+    <div class="card-head">
+      <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></div>
+      <div><span class="mono">01</span><h3>물보라 속 선수 찾기</h3></div>
+    </div>
+    <div class="label mono">PROBLEM</div>
+    <p>일반 사람 검출기는 40프레임 중 0–3프레임에서만 선수를 찾았고, 포즈 모델은 모든 관절의 신뢰도가 약 0.35에 그쳤습니다. 카메라 패닝과 옆 레인 선수가 문제를 더 키웠습니다.</p>
+    <div class="label mono">SOLUTION</div>
+    <p>오픈 보캐뷸러리 검출기 YOLO-World("swimmer")로 SAM 2 마스크 추적의 시작점을 잡습니다. 갑자기 튀거나 부풀거나 레인 로프처럼 가늘어지는 마스크는 걸러내고, 선수를 놓치거나 벗어나면 검출 경로에서 다시 시작점을 잡습니다.</p>
+    <div class="spacer"></div>
+    <div class="impact"><div class="label mono">IMPACT</div><p>측면 촬영 영상의 92–100% 프레임에서 수동 지정 없이 선수를 추적합니다.</p></div>
+  </div>
+  <div class="card">
+    <div class="card-head">
+      <div class="icon"><svg viewBox="0 0 24 24"><path d="M2 12h3l3-7 4 14 3-9 2 2h5"/></svg></div>
+      <div><span class="mono">02</span><h3>스켈레톤 없이 스트로크 세기</h3></div>
+    </div>
+    <div class="label mono">PROBLEM</div>
+    <p>관절을 믿을 수 없으니 따라갈 손목이 없고, 물보라가 스트로크를 가리거나 가짜 스트로크를 만듭니다.</p>
+    <div class="label mono">SOLUTION</div>
+    <p>마스크가 자기 중심보다 위로 뻗는 정도는 팔 리커버리마다 커집니다. 자기상관으로 주기를 구하고, 신호가 주기적인 구간에서만 스트로크를 세며, 물보라에 가려진 스트로크는 리듬으로 채웁니다.</p>
+    <div class="spacer"></div>
+    <div class="impact"><div class="label mono">IMPACT</div><p>화면 속 카운터 대비 스트로크 레이트 오차 1% 이내(분당 56.2 vs 56), 스트로크 수 오차 약 2회 이내.</p></div>
+  </div>
+  <div class="card">
+    <div class="card-head">
+      <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg></div>
+      <div><span class="mono">03</span><h3>움직이는 카메라로 시간 재기</h3></div>
+    </div>
+    <div class="label mono">PROBLEM</div>
+    <p>카메라가 선수를 따라 패닝해 화면 속 선수는 거의 움직이지 않고, 벽은 화면에 잘 잡히지 않습니다.</p>
+    <div class="label mono">SOLUTION</div>
+    <p>선수 바깥 영역의 옵티컬 플로우 중앙값, 즉 카메라 패닝을 선수의 움직임에서 빼서 방향이 바뀌는 지점을 벽으로 판단합니다. 스타트는 약 1kHz의 일정한 전자 신호음을 FFT로 찾고, 피니시는 마지막 스트로크로 추정합니다.</p>
+    <div class="spacer"></div>
+    <div class="impact"><div class="label mono">IMPACT</div><p>턴 시점 오차 0.3초 이내. NCAA 중계 영상에서는 신호음 기준 공식 구간 기록이 화면 표시 프레임과 정확히 일치했습니다.</p></div>
+  </div>
+</div>
+
+<div class="section"><h2>정답 데이터 대비 정확도</h2></div>
+<div class="numbers">
+  <div class="num"><b>±1%</b><span>화면 속 스트로크 카운터 대비 스트로크 레이트</span></div>
+  <div class="num"><b>0.3초</b><span>자동으로 찾은 턴 시점의 오차</span></div>
+  <div class="num"><b>~5%</b><span>공식 기록 대비 50m 전체 기록</span></div>
+  <div class="num"><b>16 vs 15</b><span>직접 센 스트로크 수 대비 자동 측정</span></div>
+</div>
+
+<div class="section"><h2>담당 역할</h2></div>
+<div class="role">
+  <div class="who">1인 개발 <span class="mono">100%</span></div>
+  <div class="sep"></div>
+  <div class="areas"><span>리서치·모델 선정</span><span>비전 파이프라인</span><span>신호 처리</span><span>검증</span><span>UI / UX</span><span>데이터 시각화</span></div>
+</div>
+<div class="highlights-title mono">PROJECT HIGHLIGHTS</div>
+<div class="highlights">
+  <span>Zero-input analysis</span><span>SAM 2 segmentation tracking</span><span>Open-vocabulary detection</span><span>Pose-free stroke counting</span>
+  <span>Optical-flow timing</span><span>Audio start detection</span><span>Interactive race timeline</span><span>Coaching notes &amp; what-ifs</span>
+</div>
+
+<footer><span>Jeong Min Yang</span><span class="mono">SWIMLINE</span></footer>
+</body>
+</html>

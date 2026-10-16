@@ -1,4 +1,4 @@
-# Swim Analyzer
+# Swimline
 
 Race stats from a side-view phone video of a freestyle swimmer: splits, speed, strokes
 per length, stroke rate, distance per stroke, and time to the first stroke
@@ -35,6 +35,12 @@ AMD Radeon RX 6000 cards (such as the RX 6700 XT) have no official PyTorch
 GPU support on Windows, so there it runs on the CPU. For the GPU, use Linux
 with ROCm (set `HSA_OVERRIDE_GFX_VERSION=10.3.0` for the RX 6700 XT) or a
 cloud NVIDIA GPU such as Google Colab.
+
+## Portfolio
+
+A one-page summary of the project is in `docs/portfolio/`
+(`Swimline_Portfolio.pdf`, Korean `Swimline_Portfolio_KO.pdf`), built from
+`swimline.html` and `swimline_ko.html`.
 
 ## The app
 

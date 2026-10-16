@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Swimline · Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  @page { size: A4; margin: 0; }
+  :root {
+    --ink: #111827;
+    --body: #374151;
+    --muted: #8b919c;
+    --line: #e5e7eb;
+    --accent: #1e3a8a;
+    --accent-soft: #e8eefb;
+    --accent-line: #c9d6f2;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #ffffff; }
+  body {
+    width: 210mm; height: 297mm; overflow: hidden;
+    padding: 13mm 15mm 9mm;
+    font-family: Inter, system-ui, sans-serif; color: var(--body);
+    font-size: 9.6px; line-height: 1.55;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .mono { font-family: "JetBrains Mono", ui-monospace, monospace; letter-spacing: .06em; }
+
+  /* header */
+  header { display: flex; justify-content: space-between; align-items: flex-end; }
+  h1 { font-size: 34px; font-weight: 800; letter-spacing: -.035em; color: var(--ink); line-height: 1; }
+  h1 small { font-size: 15px; font-weight: 500; color: var(--muted); letter-spacing: 0; margin-left: 6px; }
+  .tagline { font-size: 12px; color: var(--body); margin-top: 7px; font-weight: 500; }
+  .links { text-align: right; font-size: 9.5px; line-height: 1.9; }
+  .links a { color: var(--body); text-decoration: none; }
+  .links b { color: var(--ink); font-weight: 600; }
+  .links svg { width: 10px; height: 10px; vertical-align: -1px; margin-right: 5px; }
+  .rule { height: 2px; margin: 11px 0 6px; background: linear-gradient(90deg, var(--ink) 0%, var(--accent) 45%, var(--accent-line) 100%); border-radius: 1px; }
+  .meta { display: flex; justify-content: space-between; font-size: 8.5px; color: var(--muted); }
+  .meta b { color: var(--ink); font-weight: 600; }
+
+  /* section titles */
+  .section { display: flex; align-items: center; gap: 8px; margin: 15px 0 9px; }
+  .section::before { content: ""; width: 5px; height: 5px; background: var(--accent); border-radius: 1px; }
+  .section h2 { font-size: 10.5px; font-weight: 700; color: var(--ink); }
+  .section .mono { font-size: 7.5px; color: var(--muted); }
+  .section::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+  /* screens */
+  .screens { display: grid; grid-template-columns: 1fr 1.25fr; gap: 12px; margin-top: 14px; }
+  figure { margin: 0; }
+  figure .frame { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: #f8fafc; box-shadow: 0 1px 2px rgba(17,24,39,.05); }
+  figure img { display: block; width: 100%; height: 118px; object-fit: cover; }
+  figure.app img { object-fit: contain; background: #fff; }
+  figcaption { text-align: center; margin-top: 5px; font-size: 9px; color: var(--ink); font-weight: 500; }
+  figcaption span { display: block; color: var(--muted); font-weight: 400; font-size: 8px; }
+
+  /* overview + stack */
+  .two { display: grid; grid-template-columns: 1.15fr 1fr; gap: 22px; }
+  .overview p { font-size: 10px; line-height: 1.75; color: var(--body); }
+  .overview p + p { margin-top: 6px; }
+  .overview strong { color: var(--ink); font-weight: 700; }
+  .stack { display: grid; grid-template-columns: 62px 1fr; row-gap: 7px; align-items: center; }
+  .stack .mono { font-size: 7.5px; color: var(--muted); }
+  .chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .chip { border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px; font-size: 8.5px; font-weight: 500; color: var(--ink); background: #fff; }
+  .chip.key { background: var(--accent-soft); border-color: var(--accent-line); color: var(--accent); }
+
+  /* challenge cards */
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .card { border: 1px solid var(--line); border-radius: 10px; padding: 12px 13px 11px; display: flex; flex-direction: column; }
+  .card-head { display: flex; gap: 9px; align-items: center; margin-bottom: 9px; }
+  .icon { width: 24px; height: 24px; border-radius: 7px; background: var(--accent-soft); display: grid; place-items: center; flex: none; }
+  .icon svg { width: 13px; height: 13px; stroke: var(--accent); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .card-head .mono { font-size: 7.5px; color: var(--muted); display: block; line-height: 1.2; }
+  .card-head h3 { font-size: 10.5px; color: var(--ink); font-weight: 700; line-height: 1.3; }
+  .label { font-size: 7px; color: var(--muted); margin: 6px 0 2px; }
+  .card p { font-size: 8.7px; line-height: 1.6; }
+  .impact { margin-top: auto; padding-top: 7px; border-top: 1px solid var(--line); }
+  .impact p { color: var(--accent); font-weight: 600; }
+  .card .spacer { flex: 1; min-height: 6px; }
+
+  /* results strip */
+  .results { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .results figure img { height: 92px; object-fit: cover; object-position: top; }
+  .numbers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .num { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+  .num b { display: block; font-size: 15px; color: var(--ink); font-weight: 700; letter-spacing: -.02em; }
+  .num span { font-size: 8px; color: var(--muted); line-height: 1.4; display: block; }
+
+  /* role + highlights */
+  .role { display: flex; align-items: center; gap: 14px; padding-bottom: 9px; border-bottom: 1px solid var(--line); }
+  .role .who { font-size: 13px; font-weight: 800; color: var(--ink); white-space: nowrap; }
+  .role .who .mono { font-size: 8.5px; color: var(--accent); font-weight: 500; margin-left: 4px; }
+  .role .sep { width: 1px; height: 16px; background: var(--line); }
+  .areas { display: flex; gap: 13px; flex-wrap: wrap; font-size: 9px; color: var(--ink); }
+  .areas span::before { content: "▸"; color: var(--accent); margin-right: 4px; font-size: 8px; }
+  .highlights-title { font-size: 7.5px; color: var(--muted); margin: 9px 0 5px; }
+  .highlights { display: grid; grid-template-columns: repeat(4, 1fr); row-gap: 3px; font-size: 8.6px; color: var(--ink); }
+  .highlights span::before { content: "✓"; color: var(--accent); font-weight: 700; margin-right: 6px; }
+  footer { display: flex; justify-content: space-between; margin-top: 10px; font-size: 8px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Swimline<small>swim video analysis</small></h1>
+    <div class="tagline">Drop in a phone video of a swim, get splits, speed, strokes and coaching notes</div>
+  </div>
+  <div class="links">
+    <div class="mono" style="color:var(--muted);font-size:8px">PYTHON · STREAMLIT · SAM 2</div>
+  </div>
+</header>
+<div class="rule"></div>
+<div class="meta">
+  <div><b>Personal project</b> · research, models and app, built solo</div>
+</div>
+
+<div class="screens">
+  <figure>
+    <div class="frame"><img src="tracking.jpg" alt="Swimmer outlined by the tracker"></div>
+    <figcaption>Swimmer tracking<span>SAM 2 outline and box, found and re-found automatically</span></figcaption>
+  </figure>
+  <figure class="app">
+    <div class="frame"><img src="app_timeline.png" alt="Race timeline and headline numbers in the app"></div>
+    <figcaption>Results page<span>Clickable race timeline: start, strokes, turn, finish</span></figcaption>
+  </figure>
+</div>
+
+<div class="section"><h2>Project overview</h2></div>
+<div class="two">
+  <div class="overview">
+    <p>Swimline turns <strong>an ordinary phone video of a freestyle swim into race numbers with no manual input</strong>: splits, speed, stroke count, stroke rate, distance per stroke, turn times, SWOLF and stroke index, plus suggestions and what-if projections that quote the numbers behind them.</p>
+    <p>Off-the-shelf pose models fail in splash, so the pipeline uses only signals the video shows reliably: a segmentation track of the swimmer, the rhythm of the arm lifting out of the water, the camera's pan, and the start beep in the audio. Every metric was checked against hand counts, an on-screen stroke counter and official race results.</p>
+  </div>
+  <div class="stack">
+    <span class="mono">VISION</span>
+    <div class="chips"><span class="chip key">SAM 2</span><span class="chip key">YOLO-World</span><span class="chip">OpenCV</span></div>
+    <span class="mono">SIGNAL</span>
+    <div class="chips"><span class="chip key">Autocorrelation</span><span class="chip">Optical flow</span><span class="chip">Audio FFT</span><span class="chip">NumPy</span></div>
+    <span class="mono">APP</span>
+    <div class="chips"><span class="chip key">Streamlit</span><span class="chip">Altair</span><span class="chip">pandas</span></div>
+    <span class="mono">MEDIA</span>
+    <div class="chips"><span class="chip">PyAV</span><span class="chip">H.264 / libx264</span></div>
+    <span class="mono">RUNTIME</span>
+    <div class="chips"><span class="chip">PyTorch</span><span class="chip">Apple MPS</span><span class="chip">CUDA</span></div>
+    <span class="mono">TESTING</span>
+    <div class="chips"><span class="chip">Ground-truth evaluation</span><span class="chip">Playwright</span></div>
+  </div>
+</div>
+
+<div class="section"><h2>Engineering challenges</h2></div>
+<div class="cards">
+  <div class="card">
+    <div class="card-head">
+      <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></div>
+      <div><span class="mono">01</span><h3>Finding a swimmer in splash</h3></div>
+    </div>
+    <div class="label mono">PROBLEM</div>
+    <p>A stock person detector found the swimmer in 0–3 of 40 frames, and pose models scored ~0.35 confidence on every joint. A panning camera and other lanes made it worse.</p>
+    <div class="label mono">SOLUTION</div>
+    <p>Open-vocabulary YOLO-World ("swimmer") seeds SAM 2 mask tracking. Masks that jump, balloon or turn into a lane rope are rejected, and the tracker is re-seeded from the detector path whenever it loses or strays from the swimmer.</p>
+    <div class="spacer"></div>
+    <div class="impact"><div class="label mono">IMPACT</div><p>Swimmer followed in 92–100% of frames on side-view clips, with no manual marking.</p></div>
+  </div>
+  <div class="card">
+    <div class="card-head">
+      <div class="icon"><svg viewBox="0 0 24 24"><path d="M2 12h3l3-7 4 14 3-9 2 2h5"/></svg></div>
+      <div><span class="mono">02</span><h3>Counting strokes without a skeleton</h3></div>
+    </div>
+    <div class="label mono">PROBLEM</div>
+    <p>Without reliable joints there is no wrist to follow, and splash hides strokes and adds false ones.</p>
+    <div class="label mono">SOLUTION</div>
+    <p>How far the mask reaches above its own centre rises with each arm recovery. Autocorrelation finds the cycle; strokes count only where the signal is locally periodic, and strokes hidden by splash are filled in from the rhythm.</p>
+    <div class="spacer"></div>
+    <div class="impact"><div class="label mono">IMPACT</div><p>Stroke rate within 1% of an on-screen counter (56.2 vs 56/min); counts within about 2 strokes.</p></div>
+  </div>
+  <div class="card">
+    <div class="card-head">
+      <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg></div>
+      <div><span class="mono">03</span><h3>Timing from a moving camera</h3></div>
+    </div>
+    <div class="label mono">PROBLEM</div>
+    <p>The camera pans with the swimmer, so the swimmer barely moves in the picture, and walls are rarely in view.</p>
+    <div class="label mono">SOLUTION</div>
+    <p>The camera's pan (median optical flow outside the swimmer) is subtracted from the swimmer's motion: a direction flip is a wall. The start comes from the electronic beep, a steady ~1 kHz tone found by FFT, and the finish from the last stroke.</p>
+    <div class="spacer"></div>
+    <div class="impact"><div class="label mono">IMPACT</div><p>Turn found within 0.3 s; on an NCAA broadcast, the beep put official splits on the exact frames shown.</p></div>
+  </div>
+</div>
+
+<div class="section"><h2>Measured against ground truth</h2></div>
+<div class="numbers">
+  <div class="num"><b>±1%</b><span>stroke rate against an on-screen stroke counter</span></div>
+  <div class="num"><b>0.3 s</b><span>turn time error, found automatically</span></div>
+  <div class="num"><b>~5%</b><span>50 m total time against the official result</span></div>
+  <div class="num"><b>16 vs 15</b><span>automatic stroke count against a hand count</span></div>
+</div>
+
+<div class="section"><h2>Responsibilities</h2></div>
+<div class="role">
+  <div class="who">Solo project <span class="mono">100%</span></div>
+  <div class="sep"></div>
+  <div class="areas"><span>Research &amp; model selection</span><span>CV pipeline</span><span>Signal processing</span><span>Evaluation</span><span>UI / UX</span><span>Data visualization</span></div>
+</div>
+<div class="highlights-title mono">PROJECT HIGHLIGHTS</div>
+<div class="highlights">
+  <span>Zero-input analysis</span><span>SAM 2 segmentation tracking</span><span>Open-vocabulary detection</span><span>Pose-free stroke counting</span>
+  <span>Optical-flow timing</span><span>Audio start detection</span><span>Interactive race timeline</span><span>Coaching notes &amp; what-ifs</span>
+</div>
+
+<footer><span>Jeong Min Yang</span><span class="mono">SWIMLINE</span></footer>
+</body>
+</html>

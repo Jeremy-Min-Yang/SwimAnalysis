@@ -1,7 +1,8 @@
-"""Coaching notes from race stats.
+"""Coaching notes, efficiency scores, turn times and what-if projections
+from race stats.
 
 Only numbers the video measures reliably are used: splits, stroke rate,
-distance per stroke, and the rhythm of the detected strokes. Each note
+distance per stroke, and the times of the detected strokes. Each note
 states the numbers behind it. Technique (catch, body line, kick) is not
 judged, since nothing here sees it.
 """
@@ -20,6 +21,12 @@ UNEVEN_RHYTHM = 0.12
 # A turn whose first stroke comes this many seconds later than the other
 # turns' is a slow breakout.
 SLOW_BREAKOUT_S = 0.7
+# A last stroke more than this many arm cycles before the wall is a glide in.
+GLIDE_IN_CYCLES = 1.5
+# What-if: the gain from a longer stroke at the same tempo.
+LONGER_STROKE = 0.05
+# Projections smaller than this are not worth showing, in seconds.
+MIN_GAIN_S = 0.1
 
 
 def cycle_times(peak_frames: list[int]) -> list[tuple[int, int, float]]:
@@ -43,7 +50,101 @@ def rhythm_variation(peak_frames: list[int]) -> float | None:
     return float(cycles.std() / cycles.mean())
 
 
-def suggestions(stats: dict, whole_lengths: bool = True) -> list[dict]:
+def efficiency(stats: dict) -> list[dict]:
+    """Per counted length: SWOLF (seconds plus strokes, lower is better) and
+    stroke index (speed times distance per stroke, higher is better)."""
+    return [
+        {
+            "length": length["length"],
+            "swolf": length["split_s"] + length["strokes"],
+            "stroke_index": length["speed"] * length["distance_per_stroke"],
+        }
+        for length in stats["lengths"]
+        if length["strokes"]
+    ]
+
+
+def turns(stats: dict, fps: float) -> list[dict]:
+    """Per wall between lengths: seconds from the last stroke to the wall
+    ("in"), from the wall to the first stroke ("out"), and both together."""
+    result = []
+    lengths = stats["lengths"]
+    for before, after in zip(lengths[:-1], lengths[1:]):
+        if not before["peak_frames"] or after["first_stroke_s"] is None:
+            continue
+        into = before["touch_s"] - before["peak_frames"][-1] / fps
+        result.append({
+            "wall": before["length"],
+            "in_s": into,
+            "out_s": after["first_stroke_s"],
+            "total_s": into + after["first_stroke_s"],
+        })
+    return result
+
+
+def what_ifs(stats: dict, fps: float) -> list[dict]:
+    """Time that a change would have saved, as {"title", "saved_s", "detail"}.
+    Each is rough: it treats the whole length as swum at the stroke numbers."""
+    result = []
+    lengths = [length for length in stats["lengths"] if length["strokes"]]
+    unit = stats["unit"]
+    if not lengths:
+        return result
+
+    best_rate = max(length["stroke_rate_spm"] for length in lengths)
+    tempo = sum(
+        length["split_s"] * (1 - length["stroke_rate_spm"] / best_rate)
+        for length in lengths
+        if length["length"] > 1
+    )
+    if tempo >= MIN_GAIN_S:
+        result.append({
+            "title": "Hold your best tempo",
+            "saved_s": tempo,
+            "detail": f"At {best_rate:.0f} strokes/min on every length, with the same distance per "
+            f"stroke, about {tempo:.1f} s faster.",
+        })
+
+    longer = sum(
+        length["strokes"] * (1 - 1 / (1 + LONGER_STROKE)) / (length["stroke_rate_spm"] / 60)
+        for length in lengths
+    )
+    if longer >= MIN_GAIN_S:
+        dps = np.mean([length["distance_per_stroke"] for length in lengths])
+        result.append({
+            "title": f"A {LONGER_STROKE:.0%} longer stroke",
+            "saved_s": longer,
+            "detail": f"Covering about {dps * LONGER_STROKE:.2f} {unit} more per stroke at the same "
+            f"tempo saves about {longer:.1f} s, fewer strokes for the same distance.",
+        })
+
+    walls = turns(stats, fps)
+    if len(walls) >= 2:
+        best = min(wall["total_s"] for wall in walls)
+        turn_gain = sum(wall["total_s"] - best for wall in walls)
+        if turn_gain >= MIN_GAIN_S:
+            result.append({
+                "title": "Every turn like your best",
+                "saved_s": turn_gain,
+                "detail": f"Your best turn took {best:.1f} s from last stroke to first stroke; "
+                f"matching it on every wall saves about {turn_gain:.1f} s.",
+            })
+
+    later = [length for length in stats["lengths"][1:]]
+    if len(later) >= 2:
+        fastest = min(length["split_s"] for length in later)
+        even = sum(length["split_s"] - fastest for length in later)
+        if even >= MIN_GAIN_S:
+            result.append({
+                "title": "Even pace after the start",
+                "saved_s": even,
+                "detail": f"Swimming every length after the first in {fastest:.2f} s, your fastest, "
+                f"saves {even:.1f} s.",
+            })
+    return sorted(result, key=lambda item: -item["saved_s"])
+
+
+def suggestions(stats: dict, whole_lengths: bool = True, fps: float | None = None) -> list[dict]:
     """Notes as {"kind": "info" | "watch" | "good", "title", "detail"}."""
     notes = []
     lengths = stats["lengths"]
@@ -158,10 +259,10 @@ def suggestions(stats: dict, whole_lengths: bool = True) -> list[dict]:
                 }
             )
 
-        turns = [length for length in later if length["first_stroke_s"] is not None]
-        if len(turns) >= 2:
-            typical = float(np.median([length["first_stroke_s"] for length in turns]))
-            for length in turns:
+        after_walls = [length for length in later if length["first_stroke_s"] is not None]
+        if len(after_walls) >= 2:
+            typical = float(np.median([length["first_stroke_s"] for length in after_walls]))
+            for length in after_walls:
                 if length["first_stroke_s"] - typical >= SLOW_BREAKOUT_S:
                     notes.append(
                         {
@@ -172,4 +273,45 @@ def suggestions(stats: dict, whole_lengths: bool = True) -> list[dict]:
                             "loses speed once it drops below swimming pace.",
                         }
                     )
+
+    if whole_lengths and fps and stats["peak_s"]:
+        cycle_s = stats["peak_s"] * (2 / stats["strokes_per_peak"])
+        for wall in turns(stats, fps):
+            if wall["in_s"] > GLIDE_IN_CYCLES * cycle_s:
+                notes.append(
+                    {
+                        "kind": "watch",
+                        "title": f"Gliding into wall {wall['wall']}",
+                        "detail": f"The last stroke came {wall['in_s']:.1f} s before the wall, while "
+                        f"an arm cycle takes {cycle_s:.1f} s. Adjusting the stroke count so a hand "
+                        "arrives at the wall (or the turn starts) at full speed saves time.",
+                    }
+                )
+
+    scores = efficiency(stats)
+    turn_scores = [score for score in scores if score["length"] > 1]
+    if whole_lengths and len(turn_scores) >= 2:
+        first, last = turn_scores[0], turn_scores[-1]
+        change = last["swolf"] / first["swolf"] - 1
+        if change >= TREND / 2:
+            notes.append(
+                {
+                    "kind": "watch",
+                    "title": "Efficiency drops",
+                    "detail": f"SWOLF (seconds plus strokes) rose from {first['swolf']:.0f} on length "
+                    f"{first['length']} to {last['swolf']:.0f} on length {last['length']}: each "
+                    "length costs more time, more strokes, or both.",
+                }
+            )
+    if whole_lengths and scores:
+        best = max(scores, key=lambda score: score["stroke_index"])
+        notes.append(
+            {
+                "kind": "info",
+                "title": f"Most efficient: length {best['length']}",
+                "detail": f"Stroke index (speed × distance per stroke) {best['stroke_index']:.2f}"
+                + (" (length 1 includes the dive, which flatters it)." if best["length"] == 1 else ".")
+                + " Higher means more speed from each stroke; compare it across sessions.",
+            }
+        )
     return notes
