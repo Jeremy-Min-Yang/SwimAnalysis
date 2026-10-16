@@ -165,7 +165,11 @@ def track(
     output_dir: Path,
     image_size: int,
     device: str,
+    reseed=None,
 ) -> int:
+    """reseed, if given, is called on each frame after the first seed as
+    reseed(index, last_record, last_frame) and returns a prompt to seed the
+    swimmer afresh on that frame, or None."""
     capture = cv2.VideoCapture(str(video_path))
     if not capture.isOpened():
         print(f"Error: OpenCV could not open: {video_path}")
@@ -200,9 +204,12 @@ def track(
             break
 
         record = None
-        if index in seeds:
+        prompt = seeds.get(index)
+        if prompt is None and reseed is not None and index > first_seed:
+            prompt = reseed(index, last, last_frame)
+        if prompt is not None:
             source = "seed"
-            mask, score = follower.seed(frame, seeds[index])
+            mask, score = follower.seed(frame, prompt)
             record = mask_record(mask) if mask is not None else None
             accepted_since_memory = 0
             areas = []
@@ -243,7 +250,7 @@ def track(
         frames.append({"frame": index, "timestamp": index / fps, "mask": record})
 
         index += 1
-        if index % 100 == 0:
+        if index % 50 == 0:
             found = sum(f["mask"] is not None for f in frames)
             rate = index / (time.perf_counter() - started)
             print(f"  {index}/{total} frames, found {found}, {rate:.1f} frames/s", flush=True)

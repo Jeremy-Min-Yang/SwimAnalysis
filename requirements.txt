@@ -1,2 +1,7 @@
 opencv-python
 ultralytics
+streamlit
+altair
+pandas
+av
+# YOLO-World also needs CLIP; Ultralytics installs it on first use.
