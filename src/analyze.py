@@ -43,6 +43,12 @@ MAX_TALL = 1.1
 SEED_CONFIDENCE = 0.25
 # A path step may move at most this many box widths per second.
 MAX_PATH_SPEED = 2.0
+# and at most this many swimmer heights per second up or down: the camera
+# pans along the pool, so a big vertical step is another lane. Without it
+# the path hops to a far-lane swimmer whenever the near one is underwater
+# and not detected. The height is the median of the last PATH_HEIGHTS boxes.
+MAX_PATH_VERTICAL_SPEED = 1.0
+PATH_HEIGHTS = 6
 # Re-seed when lost this many frames, or when the mask centroid is outside
 # the path box (grown by BOX_MARGIN) on this many path frames in a row.
 LOST_FRAMES = 10
@@ -127,19 +133,23 @@ def swimmer_path(detections: dict, info: dict) -> dict[int, tuple[list[float], f
     position = frames.index(anchor)
     for direction in (1, -1):
         last_frame, last_box = anchor, box
+        heights = [box[3] - box[1]]
         order = frames[position + 1 :] if direction == 1 else frames[:position][::-1]
         for frame in order:
-            width = last_box[2] - last_box[0]
-            reach = width * (0.5 + MAX_PATH_SPEED * abs(frame - last_frame) / info["fps"])
+            seconds = abs(frame - last_frame) / info["fps"]
+            reach = (last_box[2] - last_box[0]) * (0.5 + MAX_PATH_SPEED * seconds)
+            vertical_reach = np.median(heights[-PATH_HEIGHTS:]) * (0.5 + MAX_PATH_VERTICAL_SPEED * seconds)
             near = [
                 (np.linalg.norm(center(b) - center(last_box)), b, c)
                 for b, c in detections[frame]
                 if np.linalg.norm(center(b) - center(last_box)) <= reach
+                and abs(center(b)[1] - center(last_box)[1]) <= vertical_reach
             ]
             if near:
                 _, chosen, chosen_confidence = min(near, key=lambda item: item[0] - 50 * item[2])
                 path[frame] = (chosen, chosen_confidence)
                 last_frame, last_box = frame, chosen
+                heights.append(chosen[3] - chosen[1])
     return dict(sorted(path.items()))
 
 
