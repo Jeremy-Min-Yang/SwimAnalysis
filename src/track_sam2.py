@@ -150,6 +150,8 @@ class Sam2Follower:
             src_shape=predictor.src_shape,
             masks=mask[None, :, :, None].astype(np.uint8),
         )
+        # update_memory adds its own axis (Ultralytics 8.4): (N, H, W) in.
+        masks = masks.reshape(-1, *masks.shape[-2:])
         points = torch.zeros((1, 0, 2), dtype=predictor.torch_dtype, device=predictor.device)
         labels = torch.zeros((1, 0), dtype=torch.int32, device=predictor.device)
         predictor.update_memory([0], points, labels, masks)
@@ -166,8 +168,9 @@ def track(
     image_size: int,
     device: str,
     reseed=None,
+    end_frame: int | None = None,
 ) -> int:
-    """reseed, if given, is called on each frame after the first seed as
+    """Stops after end_frame, if given. reseed, if given, is called on each frame after the first seed as
     reseed(index, last_record, last_frame) and returns a prompt to seed the
     swimmer afresh on that frame, or None."""
     capture = cv2.VideoCapture(str(video_path))
@@ -178,6 +181,8 @@ def track(
     width = int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
     total = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
+    if end_frame is not None:
+        total = min(total, end_frame + 1)
 
     output_dir.mkdir(parents=True, exist_ok=True)
     writer = cv2.VideoWriter(
@@ -198,7 +203,7 @@ def track(
     history = int(AREA_HISTORY_S * fps)
     started = time.perf_counter()
     index = 0
-    while True:
+    while end_frame is None or index <= end_frame:
         success, frame = capture.read()
         if not success:
             break

@@ -1,0 +1,52 @@
+clip,pool,stroke,view,start_frame,breakout_frame,finish_frame,strokes,notes
+swimvid3,25M,free,Far side,50,133,303,13,Cam Mcevoy/dive start
+swimvid4,25Mx2,free,side,85,216,852,34,"Dive start, 460F start of flip turn, 532F 2nd Breakout"
+swimvid5,25M,free,side,83,202,492,15,Wall start
+swimvid6,25YD,free,side,21,127,315,12,From dive
+swimvid7,25M,free,side,22,202,1258,11,Wall start
+swimvid8,25M,free,Far side,101,192,640,17,Wall start
+swimvid9,25M,free,Far side,23,129,426,20,"No lane lines, dive start, low visibility, other people in frame"
+swimvid10,25M,free,side,10,140,554,21,"Dive start, no lane lines, low visibility, other people close to swimmer and frame"
+swimvid11,50M,free,Far side,416,507,1266,40,"Low visibility, dive start, other people in frames"
+swimvid12,50M,free,Far side,19,126,717,38,"Two swimmers next to each other on different lanes, count is for lane 4, dive start"
+swimvid13,50M,free,side,0,135,896,23,"Ends underwater, ends not at wall"
+swimvid14,25yd,free,Side upper stands view,484,668,810,7,"Jordan Crooks, lane 4, lots of other bodies in view, dive start, 4 lengths of the pool. ANALYZE ONLY THE FIRST 25YDS, end when feet touch wall for flip turn"
+swimvid15,25M,free,Upper view,0,32,888,22,"ANALYZE ONLY THE FIRST 25M, other humans in view"
+swimvid16,50M,free,Side view,45,121,1610,35,Wall start
+swimvid17,25M,free,Side view,0,67,857,23,Wall start
+swimvid18,25M,free,Side view,0,22,722,22,"Vertical video, ANALYZE ONLY THE FIRST 25M"
+swimvid19,25+M,free,Top/side view,0,63,1029,30,"Tattoo'd male, does not finish on wall"
+swimvid20,25M,free,Side view,0,12,796,19,Wall start
+swimvid21,25M,free,Top/side view,0,0,698,21,"Wall start, does not finish on wall"
+swimvid22,25M,free,Side view,0,0,974,28,"No Lane lines, wall start"
+swimvid23,25M,free,Side view,20,31,794,23,Wall start
+swimvid24,25YD,free,Side view,12,133,693,18,"Wall start, ANALYZE ONLY THE FIRST 25M, end frame is when feet touch wall on turn"
+swimvid25,N/A,free,Side view,5,60,380,10,"ANALYZE ONLY THE FIRST 25M, end frame is when feet touch wall on turn"
+swimvid26,N/A,free,Side view,5,134,806,25,"Wall start, does not finish on wall"
+swimvid27,25YD,free,Side view,5,71,508,13,"ANALYZE ONLY THE FIRST 25M, wall start"
+swimvid28,50M,free,Side view,5,92,1333,41,"ANALYZE ONLY THE FIRST 50M, Other swimmers in lane, wall start, end frame when hand touches 50M wall"
+swimvid29,25M,free,Side view,5,9,764,22,"No lane lines, vertical video, ANALYZE ONLY THE FIRST 25M"
+swimvid30,25YD,free,Side view,0,0,407,12,Ends before touching wall
+swimvid31,25M,free,Side view,0,99,966,23,"Tattoo'd man, wall start"
+swimvid32,25M,free,Side view,12,94,845,21,"Wall start, ANALYZE ONLY THE FIRST 25M, end frame when hand touches 25M wall"
+swimvid33,25YD,free,Side view,35,108,711,24,"Wall start, ANALYZE ONLY THE FIRST 25YD, end frame when hand touches 25YD wall, other people in pool"
+swimvid34,25YD,free,Side view,207,307,827,16,"Wall start, ANALYZE ONLY THE FIRST 25YD, end frame when feet touches 25YD wall, other people in other lanes"
+swimvid35,25M,free,Side view,24,51,1038,27,Wall start
+swimvid36,50M,free,Side view,40,156,1769,51,Wall start
+swimvid37,25YD,free,Side view,20,75,649,19,"ANALYZE ONLY THE FIRST 25YD, end frame when hand touches 25YD wall, other people in other lanes"
+swimvid40,50M,free,Far stands side view,323,,1335,41,"ANALYZE ONLY THE FIRST 50M, LANE 6, Dive start, camera pans away from breakout, refind swimmer, end frame when feet touches wall"
+swimvid41,50M,breast,Far stands side view,304,444,1500,25,"Vertical Video, ANALYZE ONLY THE FIRST 50M, LANE 6, Dive start, lots of noise (people in stands)"
+swimvid42,50M,free,Far stands side view,514,690,1868,56,"LANE 2, camera pans away right before breakout, dive start"
+swimvid43,50M,free,Far stands side view,465,696,1543,51,"LANE 2, dive start"
+swimvid44,50M,free,Far stands side view,191,349,1063,40,"LANE 5. Dive start"
+swimvid45,50M,breast,Far stands side view,65,204,1405,19,"LANE 3, Poor quality, dive start, ANALYZE ONLY THE FIRST 50M"
+swimvid46,50M,free,Far stands side view,468,649,1396,39,"LANE 4, camera pans away right before breakout, dive start"
+swimvid47,50M,free,Far stands side view,166,,988,43,"LANE 3, camera pans away from breakout, dive start"
+swimvid49,50M,free,Far stands side view,365,,1375,41,"LANE 7, dive start, camera pans away from breakout"
+swimvid50,50M,free,Far stands side view,700,891,1789,50,"LANE 4, dive start, camera pans away right before breakout"
+swimvid51,50M,free,Far stands side view,925,1165,2436,53,"LANE 2, dive start, camera pans away right before breakout"
+swimvid52,50M,breast,Far stands side view,426,614,1525,25,"LANE 3, dive start"
+swimvid53,50M,fly,Far stands side view,177,339,1144,20,"LANE 4, dive start"
+swimvid54,50M,free,Far stands side view,112,253,918,45,"Lane 7, vertical video, dive start, poor quality"
+swimvid55,50M,back,Far stands side view,756,993,1820,45,"LANE 1, backstroke start, relay"
+swimvid56,50M,fly,Far stands side view,838,,2029,22,"LANE 4, ANALYZE ONLY THE FIRST 50M (FLY), dive start, camera pans away from breakout"

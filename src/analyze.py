@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -63,18 +64,17 @@ FINISH_STROKE_GAP_S = 4.0
 MOTION_OVERRUN_S = 1.5
 # A beep at most this many seconds before the swimmer moves is the start.
 BEEP_BEFORE_MOVE_S = 2.0
-# Arm or cycle: successive peaks of similar height that also repeat two
-# peaks on mean both arms are seen (one stroke per peak). Set from six clips.
-ARM_HEIGHT_STEP = 0.06
-ARM_REPEAT = 0.84
+# Each stroke peak is a full arm cycle, two strokes. Guessing from the peaks
+# whether both arms show (one stroke per peak) halved most counts it got wrong.
+STROKES_PER_PEAK = 2
 
 
 def progress(fraction: float, message: str) -> None:
     print(f"PROGRESS {fraction:.3f} {message}", flush=True)
 
 
-def detect(video: Path, device: str) -> tuple[dict[int, list[tuple[list[float], float]]], dict]:
-    """Swimmer boxes and confidences on every few frames."""
+def detect(video: Path, device: str, end_frame: int | None = None) -> tuple[dict[int, list[tuple[list[float], float]]], dict]:
+    """Swimmer boxes and confidences on every few frames, up to end_frame."""
     from ultralytics import YOLOWorld
 
     # Ultralytics downloads the weights by name if they are not in models/.
@@ -84,14 +84,14 @@ def detect(video: Path, device: str) -> tuple[dict[int, list[tuple[list[float], 
     fps = capture.get(cv2.CAP_PROP_FPS)
     info = {
         "fps": fps,
-        "frames": int(capture.get(cv2.CAP_PROP_FRAME_COUNT)),
+        "frames": min(int(capture.get(cv2.CAP_PROP_FRAME_COUNT)), end_frame + 1 if end_frame is not None else 10**9),
         "width": capture.get(cv2.CAP_PROP_FRAME_WIDTH),
         "height": capture.get(cv2.CAP_PROP_FRAME_HEIGHT),
     }
     step = max(1, round(fps / DETECTIONS_PER_S))
     detections = {}
     index = 0
-    while True:
+    while end_frame is None or index <= end_frame:
         success, frame = capture.read()
         if not success:
             break
@@ -179,29 +179,6 @@ def make_reseeder(path: dict):
     return reseed
 
 
-def strokes_per_peak(track: dict, stats: dict, start: int, end: int) -> int:
-    """2 if each stroke peak is a full arm cycle (only the near arm shows),
-    1 if both arms show and each peak is one stroke."""
-    fps = track["fps"]
-    if not stats["peak_s"]:
-        return 2
-    period = stats["peak_s"] * fps
-    raw = rs.fill_gaps(rs.mask_shape_signal(track["frames"]))
-    signal = raw - rs.moving_average(raw, max(3, round(period)))
-    signal = rs.moving_average(signal, max(1, int(rs.SMOOTH_CYCLES * period)))
-    window = signal[start : end + 1] - signal[start : end + 1].mean()
-    correlation = rs.autocorrelation(window)
-    one, two = int(round(period)), int(round(2 * period))
-    if two >= len(correlation) or correlation[one] <= 0:
-        return 2
-    peaks = [p for length in stats["lengths"] for p in (length["peak_frames"] or [])]
-    if len(peaks) < 4:
-        return 2
-    height_step = float(np.mean(np.abs(np.diff(signal[peaks]))))
-    repeat = correlation[two] / correlation[one]
-    return 1 if height_step < ARM_HEIGHT_STEP and repeat > ARM_REPEAT else 2
-
-
 def find_beep(video: Path) -> list[float]:
     # PyAV and OpenCV both bundle FFmpeg; keep PyAV in its own process.
     result = subprocess.run(
@@ -258,16 +235,13 @@ def find_times(video: Path, track: dict, reseeds: int) -> dict:
         result.update(mode="window", start=round(max(first_tracked, start or 0), 2),
                       touches=[round(last_tracked, 2)])
 
-    stats = rs.race_stats(track, 25, "m", result["start"], result["touches"], 2)
-    result["strokes_per_peak"] = strokes_per_peak(
-        track, stats, round(result["start"] * fps), round(result["touches"][-1] * fps)
-    )
+    result["strokes_per_peak"] = STROKES_PER_PEAK
     return result
 
 
-def analyze(video: Path, output_dir: Path, device: str) -> dict:
+def analyze(video: Path, output_dir: Path, device: str, end_frame: int | None = None) -> dict:
     progress(0.0, "Looking for the swimmer")
-    detections, info = detect(video, device)
+    detections, info = detect(video, device, end_frame)
     path = swimmer_path(detections, info)
     seeds = [f for f, (_, c) in path.items() if c >= SEED_CONFIDENCE]
     if not seeds:
@@ -281,7 +255,7 @@ def analyze(video: Path, output_dir: Path, device: str) -> dict:
         torch.mps.empty_cache()
     status = track_sam2.track(
         video, {first: path[first][0]}, str(SAM_MODEL), output_dir, 640, device,
-        reseed=make_reseeder(path),
+        reseed=make_reseeder(path), end_frame=end_frame,
     )
     if status != 0:
         raise RuntimeError("Tracking failed.")
@@ -289,6 +263,7 @@ def analyze(video: Path, output_dir: Path, device: str) -> dict:
     reseeds = sum(f["mask"] is not None and f["mask"]["source"] == "seed" for f in track["frames"]) - 1
 
     result = find_times(video, track, reseeds)
+    result["end_frame"] = end_frame
     (output_dir / "analysis.json").write_text(json.dumps(result, indent=1))
     progress(1.0, "Done")
     return result
@@ -299,6 +274,8 @@ def main() -> int:
     parser.add_argument("video", type=Path)
     parser.add_argument("-o", "--output-dir", type=Path)
     parser.add_argument("--device", default="auto")
+    parser.add_argument("--end-frame", type=int,
+                        help="Stop at this frame (for scoring against labels; the app reads the whole video)")
     parser.add_argument("--retime", action="store_true",
                         help="Only find the times again, from the existing track")
     args = parser.parse_args()
@@ -308,11 +285,12 @@ def main() -> int:
         track = json.loads((output_dir / "sam2_track.json").read_text())
         old = json.loads((output_dir / "analysis.json").read_text())
         result = find_times(args.video, track, old["reseeds"])
+        result["end_frame"] = old.get("end_frame")
         (output_dir / "analysis.json").write_text(json.dumps(result, indent=1))
         print(json.dumps(result, indent=1))
         return 0
     try:
-        result = analyze(args.video, output_dir, track_sam2.pick_device(args.device))
+        result = analyze(args.video, output_dir, track_sam2.pick_device(args.device), args.end_frame)
     except RuntimeError as error:
         print(f"Error: {error}", flush=True)
         return 1
@@ -321,4 +299,9 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    code = main()
+    sys.stdout.flush()
+    sys.stderr.flush()
+    # On ROCm the process can hang at interpreter exit after the work is done,
+    # so skip the normal teardown.
+    os._exit(code)
