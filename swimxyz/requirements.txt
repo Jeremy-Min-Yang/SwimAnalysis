@@ -1,0 +1,8 @@
+numpy
+pandas
+scipy
+matplotlib
+ipykernel
+remotezip
+opencv-python-headless
+torch
